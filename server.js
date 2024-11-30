@@ -48,7 +48,7 @@ app.post('/api/login', async (req, res) => {
             console.log("username",username);
 
 
-            console.log("user.password",, typeof user.password);
+            console.log("user.password", typeof user.password);
 
             console.log("password", typeof password);
             const trimmedPassword = password.trim();
