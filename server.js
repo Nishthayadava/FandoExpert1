@@ -52,9 +52,10 @@ app.post('/api/login', async (req, res) => {
             console.log("user.password",user.password);
 
             console.log("password",password);
+            const trimmedPassword = password.trim();
 
             // Compare the hashed password with the stored one
-            const passwordMatch = bcrypt.compareSync(password, user.password);
+            const passwordMatch = bcrypt.compareSync(trimmedPassword, user.password);
             if (passwordMatch) {
                 // If the password matches, generate a JWT token and return user data
                 const token = generateToken(user);
