@@ -3,7 +3,6 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const multer = require('multer');
@@ -54,10 +53,11 @@ app.post('/api/login', async (req, res) => {
             console.log("password",password);
             const trimmedPassword = password.trim();
 
+
+
             // Compare the hashed password with the stored one
-            const passwordMatch = bcrypt.compareSync(trimmedPassword, user.password);
-            console.log("passwordMatch",passwordMatch)
-            if (passwordMatch) {
+         
+            if (trimmedPassword==user.password) {
                 // If the password matches, generate a JWT token and return user data
                 const token = generateToken(user);
                 
@@ -191,13 +191,12 @@ app.post('/api/create-user', async (req, res) => {
     const { username, password, role } = req.body;
 
     // Encrypt the password
-    const hashedPassword = bcrypt.hashSync(password, 10);
     
 
     try {
         await pool.query(
             'INSERT INTO users (name, role ,password) VALUES ($1, $2, $3)',
-            [username, role, hashedPassword]
+            [username, role, password]
         );
         res.status(201).send('User created successfully');
     } catch (error) {
