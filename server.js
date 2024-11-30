@@ -35,7 +35,7 @@ app.post('/api/login', async (req, res) => {
 
     try {
         // Query the database for the user by username
-        const userQuery = await pool.query('SELECT * FROM users WHERE name = $1', [username]);
+        const userQuery = await pool.query('SELECT * FROM users WHERE name = $1' AND password=$2, [username,password]);
         console.log("userQuery",userQuery);
         // Check if the user exists
         if (userQuery.rows.length > 0) {
@@ -43,21 +43,9 @@ app.post('/api/login', async (req, res) => {
 
             
             
-            console.log("user.name",user.name);
-
-            console.log("username",username);
+        
 
 
-            console.log("user.password", typeof user.password);
-
-            console.log("password", typeof password);
-            const trimmedPassword = password.trim();
-
-
-
-            // Compare the hashed password with the stored one
-         
-            if (password==user.password) {
 
                 console.log("Password Matched");
                 // If the password matches, generate a JWT token and return user data
@@ -68,9 +56,7 @@ app.post('/api/login', async (req, res) => {
                     role: user.role,   // Role (Admin or Agent)
                     userId: user.id,   // User ID
                 });
-            } else {
-                // Password is incorrect
-                return res.status(401).json({ message: 'Invalid credentials' });
+           
             }
         } else {
             // User not found
