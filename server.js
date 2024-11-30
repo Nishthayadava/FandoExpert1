@@ -57,7 +57,7 @@ app.post('/api/login', async (req, res) => {
                     userId: user.id,   // User ID
                 });
            
-            }
+            
         } else {
             // User not found
             return res.status(404).json({ message: 'User not found' });
