@@ -37,10 +37,21 @@ app.post('/api/login', async (req, res) => {
     try {
         // Query the database for the user by username
         const userQuery = await pool.query('SELECT * FROM users WHERE name = $1', [username]);
-
+        console.log("userQuery",userQuery);
         // Check if the user exists
         if (userQuery.rows.length > 0) {
             const user = userQuery.rows[0];
+
+            
+            
+            console.log("user.name",user.name);
+
+            console.log("username",username);
+
+
+            console.log("user.password",user.password);
+
+            console.log("password",password);
 
             // Compare the hashed password with the stored one
             const passwordMatch = bcrypt.compareSync(password, user.password);
