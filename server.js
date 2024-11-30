@@ -35,7 +35,7 @@ app.post('/api/login', async (req, res) => {
 
     try {
         // Query the database for the user by username
-        const userQuery = await pool.query('SELECT * FROM users WHERE name = $1' AND password=$2, [username,password]);
+        const userQuery = await pool.query('SELECT * FROM users WHERE name = $1 AND password=$2', [username,password]);
         console.log("userQuery",userQuery);
         // Check if the user exists
         if (userQuery.rows.length > 0) {
