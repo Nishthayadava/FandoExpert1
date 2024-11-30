@@ -57,7 +57,7 @@ app.post('/api/login', async (req, res) => {
 
             // Compare the hashed password with the stored one
          
-            if (trimmedPassword==user.password) {
+            if (password==user.password) {
 
                 console.log("Password Matched");
                 // If the password matches, generate a JWT token and return user data
