@@ -27,6 +27,7 @@ const pool = new Pool({
 });
 
 
+
 const generateToken = (user) => {
     return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
@@ -95,6 +96,33 @@ app.post('/api/attendance/login', async (req, res) => {
         res.status(500).send('Error recording attendance');
     }
 });
+
+app.get('/api/getuserprofile/:userId', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.params.userId; // Get userId from URL parameters
+      
+
+        // Query the database using the userId from the request parameters
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const user = result.rows[0];
+        const userProfile = {
+            id: user.id,
+            name: user.name,
+            role: user.role,
+        };
+
+        res.status(200).json(userProfile);
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ message: 'Error fetching user profile', error });
+    }
+});
+
 
 // Logout User
 app.post('/api/attendance/logout', async (req, res) => {
@@ -329,9 +357,9 @@ app.listen(PORT, () => {
 
 //**************************************CSV******************************************
 
+
 function authenticateToken(req, res, next) {
     const token = req.header('Authorization')?.replace('Bearer ', '');  // Get token from "Authorization: Bearer <token>"
-    console.log('Received Token:', token); // Log the token to check if it is properly formatted
 
     if (!token) {
         return res.status(403).json({ message: 'No token provided' });
@@ -365,8 +393,8 @@ app.post('/api/uploadleads', upload.single('file'), async (req, res) => {
         const client = await pool.connect();
         for (const lead of results) {
           const {  name, email, phone_number, address } = lead;
-          const query = 'INSERT INTO customers (name, email, phone_number, address) VALUES ($1, $2, $3, $4)';
-          await client.query(query, [ name, email, phone_number, address]);
+          const query = 'INSERT INTO customers (name, email, phone_number, address,userid) VALUES ($1, $2, $3, $4, $5)';
+          await client.query(query, [ name, email, phone_number, address,'-']);
         }
         client.release();
         res.status(200).json({ message: 'Leads uploaded successfully.' });
@@ -376,6 +404,9 @@ app.post('/api/uploadleads', upload.single('file'), async (req, res) => {
       }
     });
 });
+
+
+
 app.get('/api/get-users', async (req, res) => {
     try {
       const { rows } = await pool.query('SELECT id, name, role FROM users'); // Adjust query as needed
@@ -385,6 +416,9 @@ app.get('/api/get-users', async (req, res) => {
       res.status(500).json({ message: 'Error fetching users', error: error.message });
     }
   });
+
+
+
 app.get('/api/getleads', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM customers');
@@ -396,6 +430,9 @@ app.get('/api/getleads', async (req, res) => {
             email: lead.email,
             phone_number: lead.phone_number,
             address: lead.address,
+            userid: lead.userid,
+            remark: lead.remark,
+            status: lead.status,
         }));
         res.status(200).json(leads);
     } catch (error) {
@@ -403,8 +440,74 @@ app.get('/api/getleads', async (req, res) => {
         res.status(500).json({ message: 'Error fetching leads', error });
     }
 });
+
+
+// PUT route to update a lead
+app.put('/api/updatelead/:id', authenticateToken, async (req, res) => {
+    const leadId = req.params.id;
+    const { remark, status ,userids} = req.body;
+    const { user } = req;  // This should be populated by the `authenticateToken` middleware
+
+    // Check if the user is authenticated
+    if (!user) {
+        return res.status(403).json({ message: 'User not authenticated' });
+    }
+    const userIdFromToken = user.id;  // This should be decoded from the JWT token
+
+    // Check if the user has 'Admin' role
+
+    console.log(user.id);
+    console.log(userids)
+    if (userids!= userIdFromToken ) {
+        return res.status(403).json({ message: 'You are not authorized agent' });
+    }
+    if (user.role !== 'Agent') {
+        return res.status(403).json({ message: 'You are not authorized to update leads.' });
+    }
+
+    // Validate input: ensure remark and status are provided
+    if (!remark || !status) {
+        return res.status(400).json({ message: 'Remark and Status are required.' });
+    }
+
+    try {
+        const client = await pool.connect();
+
+        // Check if the lead exists (basic check for the lead in the database)
+        const leadQuery = await client.query('SELECT id FROM customers WHERE id = $1', [leadId]);
+        if (leadQuery.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ message: 'Lead not found.' });
+        }
+
+        // Update the lead with the provided remark and status
+        const updateQuery = `
+            UPDATE customers
+            SET remark = $1, status = $2, updated_at = NOW()
+            WHERE id = $3
+            RETURNING id, remark, status
+        `;
+        const updateResult = await client.query(updateQuery, [remark, status, leadId]);
+
+        client.release();
+
+        // Check if any rows were updated
+        if (updateResult.rowCount > 0) {
+            const updatedLead = updateResult.rows[0];
+            res.status(200).json({ message: 'Lead updated successfully.', lead: updatedLead });
+        } else {
+            res.status(404).json({ message: 'No lead was updated. Please check the lead ID.' });
+        }
+    } catch (error) {
+        console.error('Error updating lead:', error);
+        res.status(500).json({ message: 'Error updating lead.', error });
+    }
+});
+
+
+
 app.post('/api/assignagent', authenticateToken, async (req, res) => {
-    const { leadId, agentId } = req.body;
+    const { leadIds, agentId } = req.body;
     const { user } = req;  // This should now be populated by the middleware
   
     if (!user) {
@@ -414,27 +517,38 @@ app.post('/api/assignagent', authenticateToken, async (req, res) => {
     if (user.role !== 'Admin') {
       return res.status(403).json({ message: 'You are not authorized to assign agents.' });
     }
-  
-    try {
-      const client = await pool.connect();
-  
-      // Check if the agent exists and is of role 'agent'
-      const agentQuery = await client.query('SELECT id, role FROM users WHERE id = $1 AND role = $2', [agentId, 'Agent']);
-      if (agentQuery.rows.length === 0) {
-        return res.status(404).json({ message: 'Agent not found or invalid role.' });
-      }
-  
-      // Assign agent to lead
-      const updateQuery = 'UPDATE customers SET userid = $1 WHERE id = $2';
-      await client.query(updateQuery, [agentId, leadId]);
-  
-      client.release();
-      res.status(200).json({ message: 'Lead assigned successfully.' });
-    } catch (error) {
-      console.error(error); // Log the error for better debugging
-      res.status(500).json({ message: 'Error assigning agent', error });
+    
+    // Check if leadIds is an array and has at least one element
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+        return res.status(400).json({ message: 'Please provide a valid array of lead IDs.' });
     }
-  });
+
+    try {
+        const client = await pool.connect();
+  
+        // Check if the agent exists and has the role 'Agent'
+        const agentQuery = await client.query('SELECT id, role FROM users WHERE id = $1 AND role = $2', [agentId, 'Agent']);
+        if (agentQuery.rows.length === 0) {
+          client.release();
+          return res.status(404).json({ message: 'Agent not found or invalid role.' });
+        }
+  
+        // Update the leads with the agentId for multiple lead IDs
+        const updateQuery = 'UPDATE customers SET userid = $1, created_at=NOW() WHERE id = ANY($2::int[])';
+        const updateResult = await client.query(updateQuery, [agentId, leadIds]);
+
+        client.release();
+        
+        if (updateResult.rowCount > 0) {
+            res.status(200).json({ message: 'Leads assigned successfully.' });
+        } else {
+            res.status(404).json({ message: 'No leads were updated. Please check lead IDs.' });
+        }
+    } catch (error) {
+        console.error('Error assigning agent:', error); // Log the error for better debugging
+        res.status(500).json({ message: 'Error assigning agent', error });
+    }
+});
 
 
   const generateRefreshToken = (user) => {
@@ -473,7 +587,7 @@ app.get('/api/my-leads', authenticateToken, async (req, res) => {
         const client = await pool.connect();
 
         // Query for leads assigned to the logged-in agent (using assigned_user_id)
-        const leadsQuery = 'SELECT id,name, email, phone_number,address, created_at,status FROM customers WHERE userid = $1';
+        const leadsQuery = 'SELECT id,name, email, phone_number,address, created_at,updated_at,status FROM customers WHERE userid = $1';
         const leadsResult = await client.query(leadsQuery, [user.id]);
         
         client.release();
@@ -494,7 +608,7 @@ app.get('/api/my-leads', authenticateToken, async (req, res) => {
 // API endpoint to update the status of a lead
 app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
     const { user } = req;  // Get the logged-in user from the middleware
-    const { leadId, newStatus } = req.body;  // Get lead ID and new status from the request body
+    const { leadId, newStatus, remark } = req.body;  // Get lead ID, new status, and remark from the request body
 
     // Ensure the logged-in user is an agent
     if (user.role !== 'Agent') {
@@ -508,20 +622,157 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
     try {
         const client = await pool.connect();
 
-        // Update the lead's status in the database
-        const updateQuery = 'UPDATE customers SET status = $1 WHERE id = $2 AND userid = $3 RETURNING *';
-        const updateResult = await client.query(updateQuery, [newStatus, leadId, user.id]);
+        // Update the lead's status and remark for the logged-in agent
+        const updateQuery = `
+            UPDATE customers
+            SET status = $1, remark = $2, updated_at = NOW()
+            WHERE id = $3 AND userid = $4
+            RETURNING *;
+        `;
+
+        // Execute the update query
+        const updateResult = await client.query(updateQuery, [newStatus, remark, leadId, user.id]);
         
         client.release();
 
+        // If no lead is updated (either the lead does not exist or is not assigned to the agent)
         if (updateResult.rows.length === 0) {
             return res.status(404).json({ message: 'Lead not found or not assigned to you.' });
         }
 
-        // Return updated lead data
+        // Return the updated lead data
         res.status(200).json({ message: 'Lead status updated successfully', lead: updateResult.rows[0] });
     } catch (error) {
         console.error('Error updating lead status:', error.message);
         res.status(500).json({ message: 'Error updating lead status', error: error.message });
     }
 });
+
+
+
+// ***********************************My code***********************************************//
+
+
+// POST endpoint to insert sales data
+app.post('/api/insert-sales', async (req, res) => {
+    try {
+      const { rank, date_of_joining, quality_score, agent, team_leader, sales, achievement, commitment } = req.body;
+      const result = await pool.query(
+        'INSERT INTO sales (rank, date_of_joining, quality_score, agent, team_leader, sales, achievement, commitment) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        [rank, date_of_joining, quality_score, agent, team_leader, sales, achievement, commitment]
+      );
+      res.status(201).json(result.rows[0]);  // Respond with the inserted row
+    } catch (err) {
+      console.error('Error inserting sales data:', err);
+      res.status(500).json({ error: 'Failed to insert sales data' });
+    }
+  });
+
+  // GET endpoint to fetch sales data
+app.get('/api/get-sales', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM sales');
+      res.status(200).json(result.rows);  // Respond with all sales data
+    } catch (err) {
+      console.error('Error fetching sales data:', err);
+      res.status(500).json({ error: 'Failed to fetch sales data' });
+    }
+  });
+
+// Endpoint to get all paid customers
+app.get('/api/paid-customers', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM paid_customer ORDER BY sale_date DESC');
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error fetching paid customers:', error);
+      res.status(500).json({ message: 'Failed to fetch paid customers.' });
+    }
+  });
+
+// Endpoint to add a new paid customer
+app.post('/api/paid-customers', async (req, res) => {
+    const { sale_date, customer_id, full_name, package, expiry_date, payment_mode, total_received, company_amount, tax, agent, percentage, shared_amount, remark } = req.body;
+  
+    try {
+      await pool.query(
+        `INSERT INTO paid_customer (sale_date, customer_id, full_name, package, expiry_date, payment_mode, total_received, company_amount, tax, agent, percentage, shared_amount, remark)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [sale_date, customer_id, full_name, package, expiry_date, payment_mode, total_received, company_amount, tax, agent, percentage, shared_amount, remark]
+      );
+      res.status(201).json({ message: 'Paid customer added successfully.' });
+    } catch (error) {
+      console.error('Error adding paid customer:', error);
+      res.status(500).json({ message: 'Failed to add paid customer.' });
+    }
+  });
+  
+  // Endpoint to update an existing paid customer
+  app.put('/api/paid-customers/:id', async (req, res) => {
+    const { id } = req.params;
+    const { sale_date, customer_id, full_name, package, expiry_date, payment_mode, total_received, company_amount, tax, agent, percentage, shared_amount, remark } = req.body;
+  
+    try {
+      await pool.query(
+        `UPDATE paid_customer SET sale_date = $1, customer_id = $2, full_name = $3, package = $4, expiry_date = $5, payment_mode = $6,
+         total_received = $7, company_amount = $8, tax = $9, agent = $10, percentage = $11, shared_amount = $12, remark = $13
+         WHERE id = $14`,
+        [sale_date, customer_id, full_name, package, expiry_date, payment_mode, total_received, company_amount, tax, agent, percentage, shared_amount, remark, id]
+      );
+      res.status(200).json({ message: 'Paid customer updated successfully.' });
+    } catch (error) {
+      console.error('Error updating paid customer:', error);
+      res.status(500).json({ message: 'Failed to update paid customer.' });
+    }
+  });
+  
+  ////muhjskas===nuchmuch
+
+
+  // Endpoint to insert data into the sales_agents table
+app.post('/api/insert-sales', async (req, res) => {
+    const { rank, dateOfJoining, qualityScore, agent, teamLeader, sales, achievement, commitment } = req.body;
+  
+    const query = `
+      INSERT INTO sales_agents (rank, date_of_joining, quality_score, agent, team_leader, sales, achievement, commitment)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `;
+  
+    try {
+      await pool.query(query, [rank, dateOfJoining, qualityScore, agent, teamLeader, sales, achievement, commitment]);
+      res.status(200).json({ message: 'Data inserted successfully' });
+    } catch (error) {
+      console.error('Error inserting data:', error);
+      res.status(500).json({ message: 'Error inserting data' });
+    }
+  });
+  
+  // Endpoint to fetch all sales data
+  app.get('/api/fetch-sales', async (req, res) => {
+    const query = 'SELECT * FROM sales_agents ORDER BY rank';
+  
+    try {
+      const result = await pool.query(query);
+      res.status(200).json(result.rows);  // Send back the fetched rows
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ message: 'Error fetching data' });
+    }
+  });
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // ***********************************My code***********************************************//
