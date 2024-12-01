@@ -618,46 +618,42 @@ app.post('/api/refresh-token', async (req, res) => {
         return res.status(403).send('Invalid or expired refresh token');
     }
 });
-
-
-// API endpoint to get leads assigned to the logged-in agent
 app.get('/api/my-leads', authenticateToken, async (req, res) => {
-    const { user } = req;  // Get the logged-in user from the middleware
+    const { user } = req;
   
-    // Ensure the logged-in user is an agent
-    if (user.role.trim() !== 'Agent') {
-        return res.status(403).json({ message: 'You are not authorized to view this data.' });
+    if (!user || !user.id) {
+      return res.status(403).json({ message: 'User not authenticated' });
     }
-
+  
     try {
-        const client = await pool.connect();
-
-        // Query for leads assigned to the logged-in agent (using assigned_user_id)
-        const leadsQuery = 'SELECT id,name, email, phone_number,address, created_at,updated_at,status FROM customers WHERE userid = $1';
-        const leadsResult = await client.query(leadsQuery, [user.id]);
-        
-        client.release();
-
-        // Check if there are leads assigned to this agent
-        if (leadsResult.rows.length === 0) {
-            return res.status(404).json({ message: 'No leads assigned to you.' });
-        }
-
-        // Return the leads data to the agent
-        res.status(200).json({ message: 'Leads fetched successfully', leads: leadsResult.rows });
+      const client = await pool.connect();
+      
+      // Query to fetch users from the customers table where the role is 'Agent' and the user ID matches
+      const query = 'SELECT id, name, email, phone_number, address, created_at, updated_at, status FROM customers WHERE userid = $1';
+      const result = await client.query(query, [user.id]);
+      
+      client.release();
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'No agents found for the user.' });
+      }
+  
+      res.status(200).json({ agents: result.rows });
     } catch (error) {
-        console.error('Error fetching leads for agent:', error.message);
-        res.status(500).json({ message: 'Error fetching leads', error: error.message });
+      console.error('Error fetching agents:', error);
+      res.status(500).json({ message: 'Error fetching agents', error: error.message });
     }
-});
+  });
+  
 
 // API endpoint to update the status of a lead
 app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
     const { user } = req;  // Get the logged-in user from the middleware
-    const { leadId, newStatus, remark } = req.body;  // Get lead ID, new status, and remark from the request body
+    const { leadId, newStatus, remark,role } = req.body;  // Get lead ID, new status, and remark from the request body
 
+    console.log("user",user)
     // Ensure the logged-in user is an agent
-    if (user.role !== 'Agent') {
+    if (role !== 'Agent') {
         return res.status(403).json({ message: 'You are not authorized to perform this action.' });
     }
 
@@ -673,8 +669,7 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
             UPDATE customers
             SET status = $1, remark = $2, updated_at = NOW()
             WHERE id = $3 AND userid = $4
-            RETURNING *;
-        `;
+            RETURNING *;`;
 
         // Execute the update query
         const updateResult = await client.query(updateQuery, [newStatus, remark, leadId, user.id]);
