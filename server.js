@@ -149,6 +149,7 @@ app.post('/api/attendance/logout', async (req, res) => {
         if (attendanceRecord.rows.length === 0) {
             return res.status(400).send('No attendance record found for today');
         }
+        console.log('attendanceRecord.rows.length:', attendanceRecord.rows.length);
 
         const loginTime = attendanceRecord.rows[0].login_time;
 
@@ -156,6 +157,7 @@ app.post('/api/attendance/logout', async (req, res) => {
         if (!loginTime) {
             return res.status(400).send('Invalid login time. Unable to log out.');
         }
+        console.log('loginTime', loginTime);
 
         // Step 2: Convert login time and logout time to seconds for comparison
         const [loginHours, loginMinutes, loginSeconds] = loginTime.split(':').map(Number);
@@ -163,6 +165,9 @@ app.post('/api/attendance/logout', async (req, res) => {
 
         const totalLoginSeconds = loginHours * 3600 + loginMinutes * 60 + loginSeconds;
         const totalLogoutSeconds = logoutHours * 3600 + logoutMinutes * 60 + logoutSeconds;
+
+        console.log('totalLoginSeconds', totalLoginSeconds);
+        console.log('totalLogoutSeconds', totalLogoutSeconds);
 
         // Ensure logout time is later than login time
         if (totalLogoutSeconds <= totalLoginSeconds) {
@@ -180,6 +185,7 @@ app.post('/api/attendance/logout', async (req, res) => {
             'UPDATE attendance SET logout_time = $1, total_working_time = $2 WHERE user_id = $3 AND date = $4',
             [logoutTime, workingTime.toFixed(2), userId, date]
         );
+        console.log('updateResult', updateResult);
 
         // Log the update result to check how many rows were affected
         console.log('Rows affected by update:', updateResult.rowCount);
