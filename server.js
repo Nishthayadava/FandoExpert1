@@ -653,7 +653,7 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
 
     // Ensure the logged-in user is an agent
     console.log("role",role);
-    if (role.trim() == 'Admin') {
+    if (role == 'Admin') {
         return res.status(403).json({ message: 'You are not authorized to perform this action.' });
     }
 
