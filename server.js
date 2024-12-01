@@ -80,7 +80,10 @@ app.post('/api/attendance/login', async (req, res) => {
 
 
         if (existingAttendance.rows.length === 0) {
-            const loginTime = new Date().toLocaleTimeString('it-IT', { hour12: false });
+            const loginTime =  new Date().toLocaleTimeString('en-GB', { 
+  hour12: false, 
+  timeZone: 'Asia/Kolkata' 
+});
    
          
             
@@ -132,8 +135,10 @@ app.post('/api/attendance/logout', async (req, res) => {
 
     try {
         // Get the current time in HH:MM:SS format (24-hour format)
-        const logoutTime = new Date().toLocaleTimeString('it-IT', { hour12: false });
-
+const logoutTime = new Date().toLocaleTimeString('en-GB', { 
+  hour12: false, 
+  timeZone: 'Asia/Kolkata' 
+});
         // Log to verify the incoming request data and time
         console.log('Received request for logout:', { userId, date, logoutTime });
 
@@ -245,7 +250,10 @@ app.post('/api/attendance/break', async (req, res) => {
 
     
     const date = new Date().toISOString().split('T')[0]; // Get current date
-    const time = new Date().toLocaleTimeString('it-IT', { hour12: false }); // HH:MM:SS
+    const time =  new Date().toLocaleTimeString('en-GB', { 
+  hour12: false, 
+  timeZone: 'Asia/Kolkata' 
+});
 
     try {
         const existingAttendance = await pool.query(
