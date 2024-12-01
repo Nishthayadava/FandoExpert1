@@ -656,9 +656,9 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
     if (role == 'Admin') {
         return res.status(403).json({ message: 'You are not authorized to perform this action.' });
     }
-console.log("leadid",leadId),
-    console.log("newStatus",newStatus),
-console.log("remark",remark),
+console.log("leadid",leadId);
+    console.log("newStatus",newStatus);
+console.log("remark",remark);
 
     if (!leadId || !newStatus) {
         return res.status(400).json({ message: 'Lead ID and new status are required.' });
