@@ -652,7 +652,8 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
     const { leadId, newStatus, remark,role } = req.body;  // Get lead ID, new status, and remark from the request body
 
     // Ensure the logged-in user is an agent
-    if (role !== 'Agent') {
+    console.log("role",role);
+    if (role.trim() == 'Admin') {
         return res.status(403).json({ message: 'You are not authorized to perform this action.' });
     }
 
