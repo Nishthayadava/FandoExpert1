@@ -430,8 +430,15 @@ app.post('/api/uploadleads', upload.single('file'), async (req, res) => {
         const client = await pool.connect();
         for (const lead of results) {
           const {  name, email, phone_number, address } = lead;
+            console.log(name);
+                        console.log(email);
+            console.log(phone_number);
+            console.log(address);
+
           const query = 'INSERT INTO customers (name, email, phone_number, address,userid) VALUES ($1, $2, $3, $4, $5)';
           await client.query(query, [ name, email, phone_number, address,'-']);
+                        console.log(Inserted CSV);
+
         }
         client.release();
         res.status(200).json({ message: 'Leads uploaded successfully.' });
