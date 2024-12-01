@@ -437,7 +437,7 @@ app.post('/api/uploadleads', upload.single('file'), async (req, res) => {
 
           const query = 'INSERT INTO customers (name, email, phone_number, address,userid) VALUES ($1, $2, $3, $4, $5)';
           await client.query(query, [ name, email, phone_number, address,'-']);
-                        console.log(Inserted CSV);
+                        console.log("Inserted CSV");
 
         }
         client.release();
