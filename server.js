@@ -651,7 +651,6 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
     const { user } = req;  // Get the logged-in user from the middleware
     const { leadId, newStatus, remark,role } = req.body;  // Get lead ID, new status, and remark from the request body
 
-    console.log("user",user)
     // Ensure the logged-in user is an agent
     if (role !== 'Agent') {
         return res.status(403).json({ message: 'You are not authorized to perform this action.' });
@@ -663,6 +662,7 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
 
     try {
         const client = await pool.connect();
+    console.log("client")
 
         // Update the lead's status and remark for the logged-in agent
         const updateQuery = `
@@ -673,7 +673,8 @@ app.patch('/api/update-lead-status', authenticateToken, async (req, res) => {
 
         // Execute the update query
         const updateResult = await client.query(updateQuery, [newStatus, remark, leadId, user.id]);
-        
+            console.log("updateResult")
+
         client.release();
 
         // If no lead is updated (either the lead does not exist or is not assigned to the agent)
