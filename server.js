@@ -625,7 +625,7 @@ app.get('/api/my-leads', authenticateToken, async (req, res) => {
     const { user } = req;  // Get the logged-in user from the middleware
   
     // Ensure the logged-in user is an agent
-    if (user.role !== 'Agent') {
+    if (user.role.trim() !== 'Agent') {
         return res.status(403).json({ message: 'You are not authorized to view this data.' });
     }
 
