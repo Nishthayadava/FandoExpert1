@@ -558,7 +558,7 @@ app.post('/api/assignagent', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'User not authenticated' });
     }
   
-    if (user.role !== 'Admin') {
+    if (user.role.trim() !== 'Admin') {
       return res.status(403).json({ message: 'You are not authorized to assign agents.' });
     }
     
@@ -572,6 +572,7 @@ app.post('/api/assignagent', authenticateToken, async (req, res) => {
   
         // Check if the agent exists and has the role 'Agent'
         const agentQuery = await client.query('SELECT id, role FROM users WHERE id = $1 AND role = $2', [agentId, 'Agent']);
+        console.log(agentQuery);
         if (agentQuery.rows.length === 0) {
           client.release();
           return res.status(404).json({ message: 'Agent not found or invalid role.' });
@@ -580,6 +581,7 @@ app.post('/api/assignagent', authenticateToken, async (req, res) => {
         // Update the leads with the agentId for multiple lead IDs
         const updateQuery = 'UPDATE customers SET userid = $1, created_at=NOW() WHERE id = ANY($2::int[])';
         const updateResult = await client.query(updateQuery, [agentId, leadIds]);
+        console.log(updateResult);
 
         client.release();
         
