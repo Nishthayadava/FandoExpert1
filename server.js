@@ -488,35 +488,28 @@ app.get('/api/getleads', async (req, res) => {
 });
 
 
+
 // PUT route to update a lead
 app.put('/api/updatelead/:id', authenticateToken, async (req, res) => {
     const leadId = req.params.id;
     const { remark, status ,userids} = req.body;
-    const { user } = req;  // This should be populated by the `authenticateToken` middleware
+    const { user } = req;  // user object is available here from the authenticateToken middleware
+  if (!user) {
+    return res.status(403).json({ message: 'User not authenticated' });
+  }
 
-    // Check if the user is authenticated
-    if (!user) {
-        return res.status(403).json({ message: 'User not authenticated' });
-    }
-    const userIdFromToken = user.id;  // This should be decoded from the JWT token
 
-    // Check if the user has 'Admin' role
+      // Validate the role and authorization
+  if (userids !== user.id) {
+    return res.status(403).json({ message: 'You are not authorized agent' });
+  }
+  // Check if the user has 'Agent' role
+ 
 
-    console.log(user.id);
-    console.log(userids)
-    if (userids!= userIdFromToken ) {
-        return res.status(403).json({ message: 'You are not authorized agent' });
-    }
-    if (user.role !== 'Agent') {
-        return res.status(403).json({ message: 'You are not authorized to update leads.' });
-    }
 
-    // Validate input: ensure remark and status are provided
-    if (!remark || !status) {
-        return res.status(400).json({ message: 'Remark and Status are required.' });
-    }
 
     try {
+        console.log("Inside try")
         const client = await pool.connect();
 
         // Check if the lead exists (basic check for the lead in the database)
