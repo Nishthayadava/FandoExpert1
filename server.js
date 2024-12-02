@@ -631,7 +631,7 @@ app.get('/api/my-leads', authenticateToken, async (req, res) => {
       const client = await pool.connect();
       
       // Query to fetch users from the customers table where the role is 'Agent' and the user ID matches
-      const query = 'SELECT id, name, email, phone_number, address, created_at, updated_at, status FROM customers WHERE userid = $1';
+      const query = 'SELECT * FROM customers WHERE userid = $1 and  userid in (select userid from customers WHERE  status is  Null  or remark is  Null)';
       const result = await client.query(query, [user.id]);
       
       client.release();
