@@ -477,6 +477,8 @@ app.get('/api/getleads', async (req, res) => {
             userid: lead.userid,
             remark: lead.remark,
             status: lead.status,
+              created: lead.created_at,
+            updated: lead.updated_at,
         }));
         res.status(200).json(leads);
     } catch (error) {
