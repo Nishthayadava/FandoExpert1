@@ -1,5 +1,17 @@
 const pool = require('../db');
 
+
+const createUser = async (req, res) => {
+    const { username, password, role } = req.body;
+    try {
+        await pool.query('INSERT INTO users (name, role, password) VALUES ($1, $2, $3)', [username, role, password]);
+        res.status(201).send('User created successfully');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating user');
+    }
+};
+
 // Get user profile
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
@@ -25,4 +37,4 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-module.exports = { getUserProfile };
+module.exports = { getUserProfile,createUser };
