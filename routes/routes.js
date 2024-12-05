@@ -25,7 +25,7 @@ router.get('/api/admin/attendance', authenticateToken, getAdminAttendance);
 
 
 // User Routes
-router.post('/api/users/create', createUser); // Create a new user
+router.post('/api/users/create-user', createUser); // Create a new user
 router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  // Fetch user profile
 
 // Lead Routes
