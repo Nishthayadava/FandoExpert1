@@ -22,7 +22,7 @@ router.post('/api/attendance/break', authenticateToken, handleBreak);
 router.post('/api/apply-leave', authenticateToken, applyLeave);
 // Admin: Get all attendance records
 router.get('/api/admin/attendance', authenticateToken, getAdminAttendance);
-router.get('/attendance/:userId', getAttendance);
+router.get('/api/attendance/:userId', getAttendance);
 
 
 // User Routes
