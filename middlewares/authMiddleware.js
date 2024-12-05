@@ -1,19 +1,42 @@
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
 
-function authenticateToken(req, res, next) {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
+// Middleware to authenticate the token
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1]; // Assuming token is sent in the format "Bearer <token>"
+    
+    if (!token) return res.status(403).json({ message: 'Token is required' });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            console.error('Token verification failed:', err);
-            return res.status(403).json({ message: 'Token is invalid' });
+            if (err.name === 'TokenExpiredError') {
+                // If the token has expired, we can check if the refresh token is provided
+                return res.status(401).json({ message: 'Token expired', expiredAt: err.expiredAt });
+            }
+            return res.status(403).json({ message: 'Invalid token' });
         }
+        
         req.user = user;
         next();
     });
-}
+};
 
-module.exports = authenticateToken;
+// Middleware to refresh token
+const refreshToken = (req, res) => {
+    const refreshToken = req.body.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(403).send('Refresh token is required');
+    }
+
+    jwt.verify(refreshToken, JWT_REFRESH_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).send('Invalid or expired refresh token');
+        }
+
+        const newAccessToken = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+        return res.json({ accessToken: newAccessToken });
+    });
+};
+
+module.exports = { authenticateToken, refreshToken };
