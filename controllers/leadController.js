@@ -21,6 +21,33 @@ const getLeads = async (req, res) => {
     res.status(500).json({ message: 'Error fetching leads', error });
   }
 };
+const getMyLeads = async (req, res) => {
+  const { user } = req;
+
+  if (!user || !user.id) {
+    return res.status(403).json({ message: 'User not authenticated' });
+  }
+
+  try {
+    const client = await pool.connect();
+    const query = `
+      SELECT * FROM customers 
+      WHERE userid = $1 
+      AND (status IS NULL OR remark IS NULL)
+    `;
+    const result = await client.query(query, [user.id]);
+    client.release();
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'No leads found for the user.' });
+    }
+
+    res.status(200).json({ leads: result.rows });
+  } catch (error) {
+    console.error('Error fetching leads:', error);
+    res.status(500).json({ message: 'Error fetching leads', error: error.message });
+  }
+};
 
 const updateLead = async (req, res) => {
     const { leadId } = req.params;
@@ -93,4 +120,4 @@ const assignAgent = async (req, res) => {
 
 module.exports = {   getLeads,
   updateLead,
-  assignAgent, };
+  assignAgent, getMyLeads};
