@@ -12,7 +12,7 @@ const generateRefreshToken = (user) => {
 };
 
 const login = async (req, res) => {
-    const { username, password } = req.body;
+    let { username, password } = req.body;
       username = username.trim();
     password = password.trim();
     try {
