@@ -158,6 +158,23 @@ const applyLeave = async (req, res) => {
         res.status(500).send('Error applying leave');
     }
 };
+
+// Get attendance for a specific user
+const getAttendance = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const attendanceRecords = await pool.query(
+      'SELECT * FROM attendance WHERE user_id = $1 ORDER BY date DESC',
+      [userId]
+    );
+    res.json(attendanceRecords.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching attendance');
+  }
+};
+
 // Admin: Get all attendance records
 const getAdminAttendance = async (req, res) => {
     try {
@@ -185,4 +202,4 @@ const getAdminAttendance = async (req, res) => {
         res.status(500).send('Error fetching attendance records');
     }
 };
-module.exports = { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance };
+module.exports = { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance,getAttendance };
