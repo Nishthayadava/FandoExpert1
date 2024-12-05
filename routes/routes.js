@@ -4,6 +4,8 @@ const { login } = require('./controllers/authController');
 const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance } = require('../controllers/attendanceController');
 const { getUserProfile,createUser  } = require('./controllers/userController');
 const { updateLead } = require('./controllers/leadController');
+const uploadController = require('../controllers/uploadController');
+const multer = require('multer');
 
 const authenticateToken = require('./middlewares/authMiddleware');
 
@@ -39,6 +41,11 @@ router.get('/api/admin/attendance', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance data.' });
     }
 });
+
+
+
+const upload = multer({ dest: 'uploads/' });
+router.post('/uploadleads', upload.single('file'), uploadController.uploadLeads);
 
 // Export the router
 module.exports = router;
