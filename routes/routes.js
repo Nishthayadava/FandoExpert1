@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { login } = require('./controllers/authController');
 const { loginAttendance, logoutAttendance } = require('../controllers/attendanceController');
-const { createUser,getUserProfile  } = require('./controllers/userController');
+const { getUserProfile,createUser  } = require('./controllers/userController');
 const { updateLead } = require('./controllers/leadController');
 const authenticateToken = require('./middlewares/authMiddleware');
 
