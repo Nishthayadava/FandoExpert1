@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const dotenv = require('./config/dotenv');
-const routes = require('./routes'); // Import the consolidated routes
+const dotenv = require('./dotenv');
+const routes = require('./routes/routes'); // Import the consolidated routes
 
 // Initialize app
 const app = express();
