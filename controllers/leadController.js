@@ -117,7 +117,45 @@ const assignAgent = async (req, res) => {
     res.status(500).json({ message: 'Error assigning agent', error });
   }
 };
+const updateLeadStatus = async (req, res) => {
+  const { user } = req; // Get the logged-in user from the middleware
+  const { leadId, newStatus, remark, role } = req.body; // Get lead ID, new status, and remark from the request body
 
+  // Ensure the logged-in user is not an Admin
+  if (role === 'Admin') {
+    return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+  }
+
+  if (!leadId || !newStatus) {
+    return res.status(400).json({ message: 'Lead ID and new status are required.' });
+  }
+
+  try {
+    const client = await pool.connect();
+
+    // Update the lead's status and remark for the logged-in agent
+    const updateQuery = `
+      UPDATE customers
+      SET status = $1, remark = $2, updated_at = NOW()
+      WHERE id = $3 AND userid = $4
+      RETURNING *;
+    `;
+    const updateResult = await client.query(updateQuery, [newStatus, remark, leadId, user.id]);
+
+    client.release();
+
+    // If no lead is updated (either the lead does not exist or is not assigned to the agent)
+    if (updateResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Lead not found or not assigned to you.' });
+    }
+
+    // Return the updated lead data
+    res.status(200).json({ message: 'Lead status updated successfully', lead: updateResult.rows[0] });
+  } catch (error) {
+    console.error('Error updating lead status:', error.message);
+    res.status(500).json({ message: 'Error updating lead status', error: error.message });
+  }
+};
 module.exports = {   getLeads,
   updateLead,
-  assignAgent, getMyLeads};
+  assignAgent, getMyLeads,updateLeadStatus};
