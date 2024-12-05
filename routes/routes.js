@@ -3,7 +3,7 @@ const router = express.Router();
 const { login } = require('./controllers/authController');
 const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance } = require('../controllers/attendanceController');
 const { getUserProfile,createUser,getUsers  } = require('./controllers/userController');
-const { updateLead } = require('./controllers/leadController');
+const { getLeads,updateLead,assignAgent } = require('./controllers/leadController');
 const uploadController = require('../controllers/uploadController');
 const multer = require('multer');
 
@@ -28,6 +28,11 @@ router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  /
 
 // Lead Routes
 router.put('/api/leads/updatelead/:id', authenticateToken, updateLead); // Update lead information
+router.get('/getleads', getLeads);
+// Update a lead
+// Assign agent to leads
+router.post('/assignagent', assignAgent);
+
 
 // Admin Routes (Example: Fetch all attendance records for admin)
 router.get('/api/admin/attendance', authenticateToken, async (req, res) => {
