@@ -22,20 +22,5 @@ const login = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
-const refreshToken = async (req, res) => {
-  const refreshToken = req.body.refreshToken;
 
-  if (!refreshToken) {
-    return res.status(403).send('Refresh token is required');
-  }
-
-  try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const newAccessToken = generateToken({ id: decoded.id, role: decoded.role });
-
-    return res.json({ accessToken: newAccessToken });
-  } catch (err) {
-    return res.status(403).send('Invalid or expired refresh token');
-  }
-};
-module.exports = { login , refreshToken};
+module.exports = { login };
