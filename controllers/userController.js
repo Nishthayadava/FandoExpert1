@@ -36,5 +36,14 @@ const getUserProfile = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user profile', error });
     }
 };
+const getUsers = async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT id, name, role FROM users');
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+};
 
-module.exports = { getUserProfile,createUser };
+module.exports = { getUserProfile,createUser,getUsers };
