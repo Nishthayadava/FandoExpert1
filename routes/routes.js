@@ -3,7 +3,7 @@ const router = express.Router();
 const { login,refreshToken } = require('./controllers/authController');
 const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance } = require('../controllers/attendanceController');
 const { getUserProfile,createUser,getUsers  } = require('./controllers/userController');
-const { getLeads,updateLead,assignAgent } = require('./controllers/leadController');
+const { getLeads,updateLead,assignAgent ,getMyLeads,updateLeadStatus} = require('./controllers/leadController');
 const uploadController = require('../controllers/uploadController');
 const multer = require('multer');
 
@@ -22,6 +22,7 @@ router.post('/api/attendance/break', authenticateToken, handleBreak);
 router.post('/api/apply-leave', authenticateToken, applyLeave);
 // Admin: Get all attendance records
 router.get('/api/admin/attendance', authenticateToken, getAdminAttendance);
+router.get('/attendance/:userId', getAttendance);
 
 
 // User Routes
@@ -31,9 +32,10 @@ router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  /
 // Lead Routes
 router.put('/api/updatelead/:id', authenticateToken, updateLead); // Update lead information
 router.get('/api/getleads', getLeads);
-// Update a lead
 // Assign agent to leads
 router.post('/api/assignagent', assignAgent);
+router.get('/my-leads', authenticateToken, getMyLeads);
+router.patch('/update-lead-status', authenticateToken, updateLeadStatus);
 
 
 // Admin Routes (Example: Fetch all attendance records for admin)
