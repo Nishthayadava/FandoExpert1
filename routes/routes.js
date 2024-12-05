@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { login } = require('./controllers/authController');
 const { loginAttendance, logoutAttendance } = require('../controllers/attendanceController');
-const { createUser } = require('./controllers/userController');
+const { createUser,getUserProfile  } = require('./controllers/userController');
 const { updateLead } = require('./controllers/leadController');
 const authenticateToken = require('./middlewares/authMiddleware');
 
@@ -15,6 +15,7 @@ router.post('/api/attendance/logout', authenticateToken, logoutAttendance);  // 
 
 // User Routes
 router.post('/api/users/create', createUser); // Create a new user
+router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  // Fetch user profile
 
 // Lead Routes
 router.put('/api/leads/updatelead/:id', authenticateToken, updateLead); // Update lead information
