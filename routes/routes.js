@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { login,refreshToken } = require('./controllers/authController');
-const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance } = require('../controllers/attendanceController');
+const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance,getAttendance } = require('../controllers/attendanceController');
 const { getUserProfile,createUser,getUsers  } = require('./controllers/userController');
 const { getLeads,updateLead,assignAgent ,getMyLeads,updateLeadStatus} = require('./controllers/leadController');
 const uploadController = require('../controllers/uploadController');
