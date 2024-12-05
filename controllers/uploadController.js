@@ -1,6 +1,6 @@
 const fs = require('fs');
 const csvParser = require('csv-parser');
-const pool = require('../db'); // Make sure to import the pool connection
+const pool = require('../models/db'); // Make sure to import the pool connection
 const multer = require('multer');
 
 const upload = multer({ dest: 'uploads/' });
