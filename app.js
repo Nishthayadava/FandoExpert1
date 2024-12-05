@@ -1,12 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const dotenv = require('./dotenv');
 const routes = require('./routes/routes'); // Import the consolidated routes
+require('dotenv').config();  // Load environment variables
 
 // Initialize app
 const app = express();
-dotenv.config();  // Load environment variables
 
 // Middleware
 app.use(cors());
