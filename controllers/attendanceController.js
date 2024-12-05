@@ -26,6 +26,7 @@ const logoutAttendance = async (req, res) => {
     const { userId } = req.body;
     const date = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
     const logoutTime = new Date().toLocaleTimeString('en-GB', { hour12: false, timeZone: 'Asia/Kolkata' });
+    console.log(`Logout request received for userId: ${userId}, date: ${date}, logoutTime: ${logoutTime}`);
 
     try {
         const attendanceRecord = await pool.query(
@@ -47,18 +48,21 @@ const logoutAttendance = async (req, res) => {
 
         const totalLoginSeconds = loginHours * 3600 + loginMinutes * 60 + loginSeconds;
         const totalLogoutSeconds = logoutHours * 3600 + logoutMinutes * 60 + logoutSeconds;
+        console.log(`Login Time (Seconds): ${totalLoginSeconds}, Logout Time (Seconds): ${totalLogoutSeconds}`);
 
         if (totalLogoutSeconds <= totalLoginSeconds) {
             return res.status(400).send('Logout time must be after login time');
         }
 
         const workingTime = (totalLogoutSeconds - totalLoginSeconds) / 60; // Convert seconds to minutes
+        console.log(`Total Working Time: ${workingTime}`);
 
         // Update attendance record with logout time and total working time
         const updateResult = await pool.query(
             'UPDATE attendance SET logout_time = $1, total_working_time = $2 WHERE user_id = $3 AND date = $4',
             [logoutTime, workingTime.toFixed(2), userId, date]
         );
+        console.log(`Update Result: ${updateResult.rowCount}`);
 
         if (updateResult.rowCount === 0) {
             return res.status(400).send('Failed to update attendance record');
