@@ -2,12 +2,19 @@ const pool = require('../models/db');
 const jwt = require('jsonwebtoken');
 
 const generateToken = (user) => {
-    return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const { id, role } = user;
+    return jwt.sign({ id: id.trim(), role: role.trim() }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
-const generateRefreshToken = (user) => jwt.sign({ id: user.id, role: user.role }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+
+const generateRefreshToken = (user) => {
+    const { id, role } = user;
+    return jwt.sign({ id: id.trim(), role: role.trim() }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+};
 
 const login = async (req, res) => {
     const { username, password } = req.body;
+      username = username.trim();
+    password = password.trim();
     try {
         const userQuery = await pool.query('SELECT * FROM users WHERE name = $1 AND password=$2', [username, password]);
         if (userQuery.rows.length > 0) {
