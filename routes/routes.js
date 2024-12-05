@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { login } = require('./controllers/authController');
-const { loginAttendance } = require('./controllers/attendanceController');
+const { loginAttendance, logoutAttendance } = require('../controllers/attendanceController');
 const { createUser } = require('./controllers/userController');
 const { updateLead } = require('./controllers/leadController');
 const authenticateToken = require('./middlewares/authMiddleware');
@@ -10,7 +10,8 @@ const authenticateToken = require('./middlewares/authMiddleware');
 router.post('/api/login', login); // User login
 
 // Attendance Routes
-router.post('/api/attendance/login', authenticateToken, loginAttendance); // Mark attendance login
+router.post('/api/attendance/login', authenticateToken, loginAttendance);  // Attendance login
+router.post('/api/attendance/logout', authenticateToken, logoutAttendance);  // Attendance logout
 
 // User Routes
 router.post('/api/users/create', createUser); // Create a new user
