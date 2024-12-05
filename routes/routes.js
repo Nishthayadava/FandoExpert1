@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { login } = require('./controllers/authController');
-const { loginAttendance, logoutAttendance,attendanceController } = require('../controllers/attendanceController');
+const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance } = require('../controllers/attendanceController');
 const { getUserProfile,createUser  } = require('./controllers/userController');
 const { updateLead } = require('./controllers/leadController');
 
@@ -13,11 +13,11 @@ router.post('/api/login', login); // User login
 // Attendance Routes
 router.post('/api/attendance/login', authenticateToken, loginAttendance);  // Attendance login
 router.post('/api/attendance/logout', authenticateToken, logoutAttendance);  // Attendance logout
-router.post('/api/attendance/break', authenticateToken, attendanceController.handleBreak);
+router.post('/api/attendance/break', authenticateToken, handleBreak);
 // Apply leave route
-router.post('/api/apply-leave', authenticateToken, attendanceController.applyLeave);
+router.post('/api/apply-leave', authenticateToken, applyLeave);
 // Admin: Get all attendance records
-router.get('/api/admin/attendance', authenticateToken, attendanceController.getAdminAttendance);
+router.get('/api/admin/attendance', authenticateToken, getAdminAttendance);
 
 
 // User Routes
