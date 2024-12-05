@@ -11,7 +11,7 @@ const authenticateToken = require('./middlewares/authMiddleware');
 
 // Authentication Routes
 router.post('/api/login', login); // User login
-router.post('/refresh-token', refreshToken);
+router.post('/api/refresh-token', refreshToken);
 
 
 // Attendance Routes
@@ -29,11 +29,11 @@ router.post('/api/users/create-user', createUser); // Create a new user
 router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  // Fetch user profile
 
 // Lead Routes
-router.put('/api/leads/updatelead/:id', authenticateToken, updateLead); // Update lead information
-router.get('/getleads', getLeads);
+router.put('/api/updatelead/:id', authenticateToken, updateLead); // Update lead information
+router.get('/api/getleads', getLeads);
 // Update a lead
 // Assign agent to leads
-router.post('/assignagent', assignAgent);
+router.post('/api/assignagent', assignAgent);
 
 
 // Admin Routes (Example: Fetch all attendance records for admin)
