@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const generateToken = (user) => {
     return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
+const generateRefreshToken = (user) => jwt.sign({ id: user.id, role: user.role }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
 const login = async (req, res) => {
     const { username, password } = req.body;
@@ -21,5 +22,20 @@ const login = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+const refreshToken = async (req, res) => {
+  const refreshToken = req.body.refreshToken;
 
-module.exports = { login };
+  if (!refreshToken) {
+    return res.status(403).send('Refresh token is required');
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const newAccessToken = generateToken({ id: decoded.id, role: decoded.role });
+
+    return res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    return res.status(403).send('Invalid or expired refresh token');
+  }
+};
+module.exports = { login , refreshToken};
