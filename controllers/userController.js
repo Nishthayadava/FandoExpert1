@@ -2,7 +2,7 @@ const pool = require('../models/db');
 
 
 const createUser = async (req, res) => {
-    const { username, password, role } = req.body;
+    let { username, password, role } = req.body;
 
       username = username.trim();
     password = password.trim();
@@ -10,6 +10,8 @@ const createUser = async (req, res) => {
     try {
         await pool.query('INSERT INTO users (name, role, password) VALUES ($1, $2, $3)', [username, role, password]);
         res.status(201).send('User created successfully');
+
+        
     } catch (error) {
         console.error(error);
         res.status(500).send('Error creating user');
