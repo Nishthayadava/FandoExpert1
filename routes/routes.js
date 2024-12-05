@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { login } = require('./controllers/authController');
+const { login,refreshToken } = require('./controllers/authController');
 const { loginAttendance, logoutAttendance,handleBreak,applyLeave,getAdminAttendance } = require('../controllers/attendanceController');
 const { getUserProfile,createUser,getUsers  } = require('./controllers/userController');
 const { getLeads,updateLead,assignAgent } = require('./controllers/leadController');
@@ -11,6 +11,8 @@ const authenticateToken = require('./middlewares/authMiddleware');
 
 // Authentication Routes
 router.post('/api/login', login); // User login
+router.post('/refresh-token', refreshToken);
+
 
 // Attendance Routes
 router.post('/api/attendance/login', authenticateToken, loginAttendance);  // Attendance login
