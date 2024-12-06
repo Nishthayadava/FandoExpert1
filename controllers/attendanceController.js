@@ -42,9 +42,6 @@ const logoutAttendance = async (req, res) => {
         if (!loginTime) {
             return res.status(400).send('Invalid login time. Unable to log out.');
         }
-if (!loginTime || !logoutTime) {
-  return res.status(400).send('Invalid time format.');
-}
 
         const [loginHours, loginMinutes, loginSeconds] = loginTime.split(':').map(Number);
         const [logoutHours, logoutMinutes, logoutSeconds] = logoutTime.split(':').map(Number);
@@ -53,7 +50,9 @@ if (!loginTime || !logoutTime) {
         const totalLogoutSeconds = logoutHours * 3600 + logoutMinutes * 60 + logoutSeconds;
         console.log(`Login Time (Seconds): ${totalLoginSeconds}, Logout Time (Seconds): ${totalLogoutSeconds}`);
 
-        if (totalLogoutSeconds <= totalLoginSeconds) {
+        // Buffer time for small delays in logout processing
+        const bufferTimeInSeconds = 10;
+        if (totalLogoutSeconds + bufferTimeInSeconds <= totalLoginSeconds) {
             return res.status(400).send('Logout time must be after login time');
         }
 
@@ -77,6 +76,7 @@ if (!loginTime || !logoutTime) {
         res.status(500).send('Error logging out');
     }
 };
+
 
 
 
