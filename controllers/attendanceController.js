@@ -25,15 +25,19 @@ const loginAttendance = async (req, res) => {
 const logoutAttendance = async (req, res) => {
     const { userId } = req.body;
     const date = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    
+    // Get current time in 'en-GB' format
     const logoutTime = new Date().toLocaleTimeString('en-GB', { hour12: false, timeZone: 'Asia/Kolkata' });
     console.log(`Logout request received for userId: ${userId}, date: ${date}, logoutTime: ${logoutTime}`);
 
     try {
+        // Fetch the attendance record for the user
         const attendanceRecord = await pool.query(
             'SELECT login_time FROM attendance WHERE user_id = $1 AND date = $2',
             [userId, date]
         );
 
+        // If no attendance record is found, send an error
         if (attendanceRecord.rows.length === 0) {
             return res.status(400).send('No attendance record found for today');
         }
@@ -43,23 +47,32 @@ const logoutAttendance = async (req, res) => {
             return res.status(400).send('Invalid login time. Unable to log out.');
         }
 
+        // Convert login and logout times to 'en-GB' time and then to seconds
         const [loginHours, loginMinutes, loginSeconds] = loginTime.split(':').map(Number);
         const [logoutHours, logoutMinutes, logoutSeconds] = logoutTime.split(':').map(Number);
 
         const totalLoginSeconds = loginHours * 3600 + loginMinutes * 60 + loginSeconds;
-        const totalLogoutSeconds = logoutHours * 3600 + logoutMinutes * 60 + logoutSeconds;
+        let totalLogoutSeconds = logoutHours * 3600 + logoutMinutes * 60 + logoutSeconds;
+
         console.log(`Login Time (Seconds): ${totalLoginSeconds}, Logout Time (Seconds): ${totalLogoutSeconds}`);
 
-        // Buffer time for small delays in logout processing
-        const bufferTimeInSeconds = 10;
-        if (totalLogoutSeconds + bufferTimeInSeconds <= totalLoginSeconds) {
+        // If logout time is earlier in the day than login time, assume logout is the next day
+        if (totalLogoutSeconds <= totalLoginSeconds) {
+            totalLogoutSeconds += 24 * 3600; // Add 24 hours in seconds to logout time
+        }
+
+        console.log(`Adjusted Logout Time (Seconds): ${totalLogoutSeconds}`);
+
+        // Check if the logout time is after the login time
+        if (totalLogoutSeconds <= totalLoginSeconds) {
             return res.status(400).send('Logout time must be after login time');
         }
 
+        // Calculate the working time in minutes
         const workingTime = (totalLogoutSeconds - totalLoginSeconds) / 60; // Convert seconds to minutes
         console.log(`Total Working Time: ${workingTime}`);
 
-        // Update attendance record with logout time and total working time
+        // Update the attendance record with logout time and total working time
         const updateResult = await pool.query(
             'UPDATE attendance SET logout_time = $1, total_working_time = $2 WHERE user_id = $3 AND date = $4',
             [logoutTime, workingTime.toFixed(2), userId, date]
@@ -76,6 +89,7 @@ const logoutAttendance = async (req, res) => {
         res.status(500).send('Error logging out');
     }
 };
+
 
 
 
