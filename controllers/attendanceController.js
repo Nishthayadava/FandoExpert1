@@ -42,6 +42,9 @@ const logoutAttendance = async (req, res) => {
         if (!loginTime) {
             return res.status(400).send('Invalid login time. Unable to log out.');
         }
+if (!loginTime || !logoutTime) {
+  return res.status(400).send('Invalid time format.');
+}
 
         const [loginHours, loginMinutes, loginSeconds] = loginTime.split(':').map(Number);
         const [logoutHours, logoutMinutes, logoutSeconds] = logoutTime.split(':').map(Number);
