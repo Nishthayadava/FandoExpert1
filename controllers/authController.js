@@ -1,6 +1,6 @@
 const pool = require('../models/db');
 const jwt = require('jsonwebtoken');
-const { aauthenticateToken, refreshToken,generateToken,generateAccessToken} = require('../middlewares/authMiddleware');
+const { aauthenticateToken, generateRefreshToken,generateToken,generateAccessToken} = require('../middlewares/authMiddleware');
 
 
 
