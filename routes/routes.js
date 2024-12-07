@@ -7,7 +7,7 @@ const { getLeads,updateLead,assignAgent ,getMyLeads,updateLeadStatus} = require(
 const uploadController = require('../controllers/uploadController');
 const multer = require('multer');
 
-const {authenticateToken,refreshToken} = require('../middlewares/authMiddleware');
+const {authenticateToken,refreshToken,generateToken} = require('../middlewares/authMiddleware');
 
 // Authentication Routes
 router.post('/api/login', login); // User login
