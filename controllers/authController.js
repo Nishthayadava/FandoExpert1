@@ -1,5 +1,5 @@
 const pool = require('../models/db');
-const { generateAccessToken, generateRefreshToken } = require('../middlewares/authMiddleware'); // Corrected the imports
+const { authenticateToken, refreshToken, generateToken: generateAccessToken, generateRefreshToken } = require('../middlewares/authMiddleware'); // Corrected the imports
 
 
 
