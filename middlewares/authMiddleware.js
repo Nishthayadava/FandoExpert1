@@ -1,25 +1,28 @@
+// authMiddleware.js
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
 
+// Function to generate access token (1 hour expiration)
 const generateAccessToken = (user) => {
     const { id, role } = user;
-    return jwt.sign({ id: id.trim(), role: role.trim() }, JWT_SECRET, { expiresIn: '1h' }); // 1 hour expiration
+    return jwt.sign({ id, role }, JWT_SECRET, { expiresIn: '1h' });
 };
 
-const generateToken = (user) => {
+// Function to generate refresh token (7 days expiration)
+const generateRefreshToken = (user) => {
     const { id, role } = user;
-    return jwt.sign({ id: id.trim(), role: role.trim() }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    return jwt.sign({ id, role }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 };
-// Middleware to authenticate the token
+
+// Middleware to authenticate token
 const authenticateToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1]; // Assuming token is sent in the format "Bearer <token>"
+    const token = req.headers['authorization']?.split(' ')[1];
     
     if (!token) return res.status(403).json({ message: 'Token is required' });
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
-                // If the token has expired, we can check if the refresh token is provided
                 return res.status(401).json({ message: 'Token expired', expiredAt: err.expiredAt });
             }
             return res.status(403).json({ message: 'Invalid token' });
@@ -48,4 +51,4 @@ const refreshToken = (req, res) => {
     });
 };
 
-module.exports = { authenticateToken, refreshToken,generateToken,generateAccessToken };
+module.exports = { authenticateToken, refreshToken, generateToken: generateAccessToken, generateRefreshToken };
