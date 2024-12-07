@@ -1,6 +1,6 @@
 // authMiddleware.js
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
+const { JWT_SECRET } = process.env;
 
 // Function to generate access token (1 hour expiration)
 const generateAccessToken = (user) => {
@@ -11,7 +11,7 @@ const generateAccessToken = (user) => {
 // Function to generate refresh token (7 days expiration)
 const generateRefreshToken = (user) => {
     const { id, role } = user;
-    return jwt.sign({ id: id.trim(), role: role.trim() }, JWT_REFRESH_SECRET, { expiresIn: '7d' }); // 7 days expiration
+    return jwt.sign({ id: id.trim(), role: role.trim() }, JWT_SECRET, { expiresIn: '7d' }); // 7 days expiration
 };
 
 // Middleware to authenticate token
@@ -41,7 +41,7 @@ const refreshToken = (req, res) => {
         return res.status(403).send('Refresh token is required');
     }
 
-    jwt.verify(refreshToken, JWT_REFRESH_SECRET, (err, user) => {
+    jwt.verify(refreshToken, JWT_SECRET, (err, user) => {
         if (err) {
             return res.status(403).send('Invalid or expired refresh token');
         }
