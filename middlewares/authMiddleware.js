@@ -1,6 +1,15 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
 
+const generateAccessToken = (user) => {
+    const { id, role } = user;
+    return jwt.sign({ id: id.trim(), role: role.trim() }, JWT_SECRET, { expiresIn: '1h' }); // 1 hour expiration
+};
+
+const generateToken = (user) => {
+    const { id, role } = user;
+    return jwt.sign({ id: id.trim(), role: role.trim() }, process.env.JWT_SECRET, { expiresIn: '24h' });
+};
 // Middleware to authenticate the token
 const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1]; // Assuming token is sent in the format "Bearer <token>"
@@ -39,4 +48,4 @@ const refreshToken = (req, res) => {
     });
 };
 
-module.exports = { authenticateToken, refreshToken };
+module.exports = { authenticateToken, refreshToken,generateToken,generateAccessToken };
