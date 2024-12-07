@@ -5,13 +5,13 @@ const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
 // Function to generate access token (1 hour expiration)
 const generateAccessToken = (user) => {
     const { id, role } = user;
-    return jwt.sign({ id, role }, JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ id: id.trim(), role: role.trim() }, JWT_SECRET, { expiresIn: '1h' }); // 1 hour expiration
 };
 
 // Function to generate refresh token (7 days expiration)
 const generateRefreshToken = (user) => {
     const { id, role } = user;
-    return jwt.sign({ id, role }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+    return jwt.sign({ id: id.trim(), role: role.trim() }, JWT_REFRESH_SECRET, { expiresIn: '7d' }); // 7 days expiration
 };
 
 // Middleware to authenticate token
