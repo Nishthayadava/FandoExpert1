@@ -1,6 +1,5 @@
 const pool = require('../models/db');
-const jwt = require('jsonwebtoken');
-const { aauthenticateToken, generateRefreshToken,generateToken,generateAccessToken} = require('../middlewares/authMiddleware');
+const { generateAccessToken, generateRefreshToken } = require('../middlewares/authMiddleware'); // Corrected the imports
 
 
 
@@ -14,16 +13,17 @@ const login = async (req, res) => {
         if (userQuery.rows.length > 0) {
             const user = userQuery.rows[0];
 
-            const token = generateToken(user);            
+            const token = generateAccessToken(user);            
             const refreshToken = generateRefreshToken(user);
-            
 
+            // Return tokens and user details
             return res.json({
                 token: token,  // Access token (1 hour)
                 refreshToken: refreshToken,  // Refresh token (7 days)
                 role: user.role,
                 userId: user.id
-            });        } else {
+            });
+              } else {
             return res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
