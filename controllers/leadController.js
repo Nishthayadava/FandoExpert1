@@ -33,11 +33,11 @@ const getMyLeads = async (req, res) => {
     console.log("user", user.id)
     const query = `
       SELECT * FROM customers 
-      WHERE userid = '2' 
+      WHERE userid = $1 
       AND (status IS NULL OR remark IS NULL)
     `;
     console.log("query", query)
-    const result = await client.query(query, [user.id]);
+    const result = await client.query(query, [String(user.id)]);
     console.log("result", result)
     client.release();
     console.log("rows result", result.rows.length)
