@@ -23,22 +23,28 @@ const getLeads = async (req, res) => {
 };
 
 const getMyLeads = async (req, res) => {
-  // Hardcode user.id as 2
-  
+  const { user } = req;
+
+  if (!user || !user.id) {
+    return res.status(403).json({ message: 'User not authenticated' });
+  }
 
   try {
     const client = await pool.connect();
-    
+    console.log("user", user.id);
+
+    // Trim spaces from user.id
+    const userIdTrimmed = String(user.id).trim(); 
 
     const query = `
       SELECT * FROM customers 
-      WHERE userid = '2'
+      WHERE userid = $1 
       AND (status IS NULL OR remark IS NULL)
     `;
     console.log("query", query);
-
-    // Pass the hardcoded userId to the query
-    const result = await client.query(query);
+    
+    // Pass the trimmed user.id to the query
+    const result = await client.query(query, [userIdTrimmed]);
 
     console.log("result", result);
     client.release();
