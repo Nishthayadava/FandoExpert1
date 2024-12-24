@@ -21,13 +21,14 @@ const createUser = async (req, res) => {
 // Get user profile
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
-
+    console.log('userId',userId);
     try {
         const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'User not found' });
         }
+    console.log('result',result);
 
         const user = result.rows[0];
         const userProfile = {
