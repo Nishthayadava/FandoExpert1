@@ -33,7 +33,7 @@ const getMyLeads = async (req, res) => {
     console.log("user", user.id)
     const query = `
       SELECT * FROM customers 
-      WHERE userid = 2 
+      WHERE userid = '2' 
       AND (status IS NULL OR remark IS NULL)
     `;
     console.log("query", query)
