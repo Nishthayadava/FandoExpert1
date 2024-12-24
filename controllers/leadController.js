@@ -27,15 +27,18 @@ const getMyLeads = async (req, res) => {
   if (!user || !user.id) {
     return res.status(403).json({ message: 'User not authenticated' });
   }
-  console.log("user", user.id)
+  
   try {
     const client = await pool.connect();
+    console.log("user", user.id)
     const query = `
       SELECT * FROM customers 
       WHERE userid = $1 
       AND (status IS NULL OR remark IS NULL)
     `;
+    console.log("query", query)
     const result = await client.query(query, [user.id]);
+    console.log("result", result)
     client.release();
 
     if (result.rows.length === 0) {
