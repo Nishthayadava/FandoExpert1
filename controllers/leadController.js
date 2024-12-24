@@ -65,7 +65,7 @@ const updateLead = async (req, res) => {
     const { leadId } = req.params;
     const { remark, status, userId } = req.body;
   console.log("leadId", leadId);
-  cosole.log("userId", userId)
+  console.log("userId", userId)
 
     try {
         const client = await pool.connect();
