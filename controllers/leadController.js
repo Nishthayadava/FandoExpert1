@@ -27,7 +27,7 @@ const getMyLeads = async (req, res) => {
   if (!user || !user.id) {
     return res.status(403).json({ message: 'User not authenticated' });
   }
-
+  console.log("user", user.id)
   try {
     const client = await pool.connect();
     const query = `
