@@ -30,7 +30,7 @@ router.post('/api/create-user', createUser); // Create a new user
 router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  // Fetch user profile
 
 // Lead Routes
-router.put('/api/updatelead/:id', authenticateToken, updateLead); // Update lead information
+router.put('/api/updatelead/:id',  updateLead); // Update lead information
 router.get('/api/getleads', getLeads);
 // Assign agent to leads
 router.post('/api/assignagent',authenticateToken, assignAgent);
