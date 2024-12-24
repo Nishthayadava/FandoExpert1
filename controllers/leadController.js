@@ -62,21 +62,21 @@ const getMyLeads = async (req, res) => {
 };
 
 const updateLead = async (req, res) => {
-    const { leadId } = req.params;
-    const { remark, status, userId } = req.body;
+    const { leadId, remark, status, userids } = req.body; // Extracting from body
   console.log("leadId", leadId);
-  console.log("userId", userId)
+  console.log("userids", userids);
+
 
     try {
         const client = await pool.connect();
-        const leadQuery = await client.query('SELECT id FROM customers WHERE id = $1', [userId]);
+        const leadQuery = await client.query('SELECT id FROM customers WHERE id = $1', [leadId]);
         if (leadQuery.rows.length === 0) {
             client.release();
             return res.status(404).json({ message: 'Lead not found.' });
         }
 
         const updateQuery = 'UPDATE customers SET remark = $1, status = $2, updated_at = NOW() WHERE id = $3 RETURNING id, remark, status';
-        const updateResult = await client.query(updateQuery, [remark, status, userId]);
+        const updateResult = await client.query(updateQuery, [remark, status, leadId]);
         client.release();
 
         if (updateResult.rowCount > 0) {
