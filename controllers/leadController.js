@@ -60,36 +60,37 @@ const getMyLeads = async (req, res) => {
     res.status(500).json({ message: 'Error fetching leads', error: error.message });
   }
 };
-
 const updateLead = async (req, res) => {
-    const { leadId, remark, status, userids } = req.body; // Extracting from body
-  console.log("leadId", leadId);
-  console.log("userids", userids);
+  const { remark, status, userids } = req.body; // Extracting from body
+  const { id } = req.params; // Extracting leadId from URL path
 
+  console.log("leadId:", id); // Should log the correct leadId
+  console.log("userids:", userids); // Should log the correct user IDs
 
-    try {
-        const client = await pool.connect();
-        const leadQuery = await client.query('SELECT id FROM customers WHERE id = $1', [leadId]);
-        if (leadQuery.rows.length === 0) {
-            client.release();
-            return res.status(404).json({ message: 'Lead not found.' });
-        }
-
-        const updateQuery = 'UPDATE customers SET remark = $1, status = $2, updated_at = NOW() WHERE id = $3 RETURNING id, remark, status';
-        const updateResult = await client.query(updateQuery, [remark, status, leadId]);
-        client.release();
-
-        if (updateResult.rowCount > 0) {
-            const updatedLead = updateResult.rows[0];
-            res.status(200).json({ message: 'Lead updated successfully.', lead: updatedLead });
-        } else {
-            res.status(404).json({ message: 'No lead was updated. Please check the lead ID.' });
-        }
-    } catch (error) {
-        console.error('Error updating lead:', error);
-        res.status(500).json({ message: 'Error updating lead.', error });
+  try {
+    const client = await pool.connect();
+    const leadQuery = await client.query('SELECT id FROM customers WHERE id = $1', [id]);
+    if (leadQuery.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ message: 'Lead not found.' });
     }
+
+    const updateQuery = 'UPDATE customers SET remark = $1, status = $2, updated_at = NOW() WHERE id = $3 RETURNING id, remark, status';
+    const updateResult = await client.query(updateQuery, [remark, status, id]);
+    client.release();
+
+    if (updateResult.rowCount > 0) {
+      const updatedLead = updateResult.rows[0];
+      res.status(200).json({ message: 'Lead updated successfully.', lead: updatedLead });
+    } else {
+      res.status(404).json({ message: 'No lead was updated. Please check the lead ID.' });
+    }
+  } catch (error) {
+    console.error('Error updating lead:', error);
+    res.status(500).json({ message: 'Error updating lead.', error });
+  }
 };
+
 
 // Assign an agent to a lead
 const assignAgent = async (req, res) => {
