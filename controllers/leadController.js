@@ -24,21 +24,21 @@ const getLeads = async (req, res) => {
 
 const getMyLeads = async (req, res) => {
   // Hardcode user.id as 2
-  const userId = 2;
+  
 
   try {
     const client = await pool.connect();
-    console.log("userId", userId);
+    
 
     const query = `
       SELECT * FROM customers 
-      WHERE userid = $1 
+      WHERE userid = '2'
       AND (status IS NULL OR remark IS NULL)
     `;
     console.log("query", query);
 
     // Pass the hardcoded userId to the query
-    const result = await client.query(query, [String(userId)]);
+    const result = await client.query(query);
 
     console.log("result", result);
     client.release();
