@@ -27,7 +27,7 @@ router.get('/api/attendance/:userId', getAttendance);
 
 // User Routes
 router.post('/api/create-user', createUser); // Create a new user
-router.get('/api/getuserprofile/:userId', authenticateToken, getUserProfile);  // Fetch user profile
+router.get('/api/getuserprofile/:userId',  getUserProfile);  // Fetch user profile
 
 // Lead Routes
 router.put('/api/updatelead/:id',  updateLead); // Update lead information
