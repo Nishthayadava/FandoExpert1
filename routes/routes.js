@@ -34,7 +34,7 @@ router.put('/api/updatelead/:id',  updateLead); // Update lead information
 router.get('/api/getleads', getLeads);
 // Assign agent to leads
 router.post('/api/assignagent',authenticateToken, assignAgent);
-router.get('/my-leads',authenticateToken, getMyLeads);
+router.get('/my-leads', getMyLeads);
 router.patch('/update-lead-status', authenticateToken, updateLeadStatus);
 
 
