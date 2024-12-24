@@ -60,7 +60,6 @@ const getMyLeads = async (req, res) => {
     res.status(500).json({ message: 'Error fetching leads', error: error.message });
   }
 };
-    
 
 const updateLead = async (req, res) => {
     const { leadId } = req.params;
