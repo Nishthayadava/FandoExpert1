@@ -40,7 +40,7 @@ const getMyLeads = async (req, res) => {
     const result = await client.query(query, [user.id]);
     console.log("result", result)
     client.release();
-
+    console.log("result", length.log)
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'No leads found for the user.' });
     }
